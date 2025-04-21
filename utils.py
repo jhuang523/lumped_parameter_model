@@ -24,7 +24,7 @@ def index_to_date(df, date_col = 'DATE'):
     """sets index to date col"""
     df = convert_df_to_date_time(df, date_col)
     df.index = df[date_col]
-    return df.drop(date_col, index = 1)
+    return df.drop(date_col, axis = 1)
 def add_to_timestamp(t, dt, unit = 'hr'):
     if unit == 'hr':
         return t + datetime.timedelta(hours = dt)  
@@ -47,3 +47,19 @@ def subtract_timestamps(t1, t2, unit = 'hr'):
 
 def reload_module(module):
     importlib.reload(module)
+
+def fill_na(df, method = 'rolling', *cols, **kwargs):
+    if type(cols) != list:
+        cols = list(cols)
+    if method == 'rolling':
+        window = kwargs.get('window', None)
+        df[cols] = df[cols].fillna(df[cols].rolling(window=window, min_periods=1).mean())
+    if method == 'bfill':
+        df[cols] = df[cols].bfill()
+    if method == 'ffill':
+        df[cols] = df[cols].ffill()
+    elif method == 'constant':
+        fill = kwargs.get('fill', None) 
+        df[cols] = df[cols].fillna(fill)
+        
+    return df
